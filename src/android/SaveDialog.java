@@ -2,6 +2,7 @@ package io.github.amphiluke;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
@@ -57,7 +58,12 @@ public class SaveDialog extends CordovaPlugin {
                 this.callbackContext.error("The dialog has been cancelled");
             } else if (resultCode == Activity.RESULT_OK && resultData != null) {
                 Uri uri = resultData.getData();
-                this.callbackContext.success(uri.toString());
+                String filePath = getFilePathFromUri(uri);
+                if (filePath != null) {
+                    this.callbackContext.success(filePath);
+                } else {
+                    this.callbackContext.error("Failed to retrieve file path");
+                }
             } else {
                 this.callbackContext.error("Unknown error");
             }
@@ -84,7 +90,8 @@ public class SaveDialog extends CordovaPlugin {
             FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
             try {
                 fileOutputStream.write(rawData);
-                this.callbackContext.success(uri.toString());
+                String filePath = getFilePathFromUri(uri);
+                this.callbackContext.success(filePath);
             } catch (Exception e) {
                 this.callbackContext.error(e.getMessage());
                 e.printStackTrace();
@@ -96,5 +103,24 @@ public class SaveDialog extends CordovaPlugin {
             this.callbackContext.error(e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private String getFilePathFromUri(Uri uri) {
+        String path = null;
+        try {
+            if (uri.getScheme().equals("content")) {
+                String[] projection = {android.provider.MediaStore.Images.Media.DATA};
+                Cursor cursor = cordova.getActivity().getContentResolver().query(uri, projection, null, null, null);
+                int column_index = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DATA);
+                cursor.moveToFirst();
+                path = cursor.getString(column_index);
+                cursor.close();
+            } else if (uri.getScheme().equals("file")) {
+                path = uri.getPath();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return path;
     }
 }
