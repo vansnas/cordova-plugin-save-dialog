@@ -15,6 +15,7 @@ import org.apache.cordova.CordovaArgs;
 
 import org.json.JSONException;
 
+import java.util.Arrays;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 
