@@ -150,13 +150,11 @@ public class SaveDialog extends CordovaPlugin {
             Log.d("FilePathFromUri", "Uri: " + uri.toString());
 
             if ("content".equals(uri.getScheme())) {
-                String[] projection = {MediaStore.Images.Media.DATA};
+                String[] projection = {"_data"};
                 Cursor cursor = cordova.getActivity().getContentResolver().query(uri, projection, null, null, null);
 
                 if (cursor != null) {
-                    Log.d("FilePathFromUri", "Columns available in cursor: " + Arrays.toString(cursor.getColumnNames()));
-
-                    Log.d("CursorToString", "Cursor data: " + cursorToString(cursor));
+                    Log.d("FilePathFromUri", "Cursor data: " + cursorToString(cursor));
 
                     if (cursor.moveToFirst()) {
                         int column_index = cursor.getColumnIndexOrThrow("_data");
@@ -170,6 +168,7 @@ public class SaveDialog extends CordovaPlugin {
                 } else {
                     Log.d("FilePathFromUri", "Cursor is null");
                 }
+
             } else if ("file".equals(uri.getScheme())) {
                 path = uri.getPath();
                 Log.d("FilePathFromUri", "Path retrieved from file URI: " + path);
@@ -183,24 +182,26 @@ public class SaveDialog extends CordovaPlugin {
 
     private String cursorToString(Cursor cursor) {
         StringBuilder result = new StringBuilder();
-        if (cursor != null && cursor.moveToFirst()) {
+        if (cursor != null) {
             int columns = cursor.getColumnCount();
-            do {
+            Log.d("CursorToString", "Number of columns: " + columns);
+
+            while (cursor.moveToNext()) {
                 for (int i = 0; i < columns; i++) {
                     String columnName = cursor.getColumnName(i);
                     String columnValue = cursor.getString(i);
-                    result.append(columnName)
-                            .append(": ")
-                            .append(columnValue)
-                            .append("\n");
+                    result.append(columnName).append(": ").append(columnValue).append("\n");
 
                     Log.d("CursorToString", "Column: " + columnName + ", Value: " + columnValue);
                 }
                 result.append("\n");
-            } while (cursor.moveToNext());
+            }
         } else {
-            Log.d("CursorToString", "Cursor is null or empty");
+            result.append("Cursor is null");
+            Log.d("CursorToString", "Cursor is null");
         }
         return result.toString();
     }
+
+
 }
