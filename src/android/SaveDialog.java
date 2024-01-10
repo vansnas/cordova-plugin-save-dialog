@@ -53,13 +53,18 @@ public class SaveDialog extends CordovaPlugin {
         return true;
     }
 
-    private void locateFile(String type, String name) {
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType(type);
-        intent.putExtra(Intent.EXTRA_TITLE, name);
-        cordova.startActivityForResult(this, intent, SaveDialog.LOCATE_FILE);
+    private void locateFile(final String type, final String name) {
+        cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
+                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType(type);
+                intent.putExtra(Intent.EXTRA_TITLE, name);
+                cordova.startActivityForResult(SaveDialog.this, intent, SaveDialog.LOCATE_FILE);
+            }
+        });
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
