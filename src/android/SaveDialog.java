@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
+import android.util.Log; // Import Log for logging
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -34,7 +35,16 @@ public class SaveDialog extends CordovaPlugin {
                 this.addChunk(args.getArrayBuffer(0));
                 break;
             case "saveFile":
-                this.saveFile(Uri.parse(args.getString(0)), this.fileByteStream.toByteArray());
+                Uri uri = Uri.parse(args.getString(0));
+                byte[] rawData = this.fileByteStream.toByteArray();
+                
+                // Use cordova.getThreadPool().execute(new Runnable()) for asynchronous tasks
+                cordova.getThreadPool().execute(new Runnable() {
+                    public void run() {
+                        saveFileAsync(uri, rawData);
+                    }
+                });
+
                 this.fileByteStream.reset();
                 break;
             default:
@@ -58,12 +68,18 @@ public class SaveDialog extends CordovaPlugin {
                 this.callbackContext.error("The dialog has been cancelled");
             } else if (resultCode == Activity.RESULT_OK && resultData != null) {
                 Uri uri = resultData.getData();
-                String filePath = getFilePathFromUri(uri);
-                if (filePath != null) {
-                    this.callbackContext.success(filePath);
-                } else {
-                    this.callbackContext.error("Failed to retrieve file path");
-                }
+                
+                // Use cordova.getThreadPool().execute(new Runnable()) for asynchronous tasks
+                cordova.getThreadPool().execute(new Runnable() {
+                    public void run() {
+                        String filePath = getFilePathFromUri(uri);
+                        if (filePath != null) {
+                            callbackContext.success(filePath);
+                        } else {
+                            callbackContext.error("Failed to retrieve file path");
+                        }
+                    }
+                });
             } else {
                 this.callbackContext.error("Unknown error");
             }
@@ -75,32 +91,44 @@ public class SaveDialog extends CordovaPlugin {
     }
 
     private void addChunk(byte[] chunk) {
-        try {
-            this.fileByteStream.write(chunk);
-            this.callbackContext.success();
-        } catch (Exception e) {
-            this.callbackContext.error(e.getMessage());
-            e.printStackTrace();
-        }
+        // Use cordova.getThreadPool().execute(new Runnable()) for asynchronous tasks
+        cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
+                try {
+                    fileByteStream.write(chunk);
+                    callbackContext.success();
+                } catch (Exception e) {
+                    callbackContext.error(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
-    private void saveFile(Uri uri, byte[] rawData) {
+    // Use cordova.getThreadPool().execute(new Runnable()) for asynchronous tasks
+    private void saveFileAsync(Uri uri, byte[] rawData) {
         try {
             ParcelFileDescriptor pfd = cordova.getActivity().getContentResolver().openFileDescriptor(uri, "w");
             FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
             try {
                 fileOutputStream.write(rawData);
-                String filePath = getFilePathFromUri(uri);
-                this.callbackContext.success(filePath);
+                
+                // Use cordova.getThreadPool().execute(new Runnable()) for asynchronous tasks
+                cordova.getThreadPool().execute(new Runnable() {
+                    public void run() {
+                        String filePath = getFilePathFromUri(uri);
+                        callbackContext.success(filePath);
+                    }
+                });
             } catch (Exception e) {
-                this.callbackContext.error(e.getMessage());
+                callbackContext.error(e.getMessage());
                 e.printStackTrace();
             } finally {
                 fileOutputStream.close();
                 pfd.close();
             }
         } catch (Exception e) {
-            this.callbackContext.error(e.getMessage());
+            callbackContext.error(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -109,7 +137,7 @@ public class SaveDialog extends CordovaPlugin {
         if (uri == null) {
             return null;
         }
-        
+
         String path = null;
         try {
             Log.d("FilePathFromUri", "Uri: " + uri.toString());
