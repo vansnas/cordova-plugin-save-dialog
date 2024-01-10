@@ -140,43 +140,37 @@ public class SaveDialog extends CordovaPlugin {
 
     private String getFilePathFromUri(Uri uri) {
         if (uri == null) {
-            Log.e("FilePathFromUri", "Uri is null");
             return null;
         }
 
         String path = null;
         try {
-            Log.d("FilePathFromUri", "Uri: " + uri.toString());
-
-            if (uri.getScheme().equals("content")) {
-                String[] projection = {android.provider.MediaStore.Images.Media.DATA};
+            if ("content".equals(uri.getScheme())) {
+                Log.d("FilePathFromUri", "Uri: " + uri.toString());
+            
+                String[] projection = {MediaStore.Images.Media.DATA};
                 Cursor cursor = cordova.getActivity().getContentResolver().query(uri, projection, null, null, null);
 
                 if (cursor != null) {
-                    try {
-                        if (cursor.moveToFirst()) {
-                            int column_index = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DATA);
-                            path = cursor.getString(column_index);
-                            Log.d("FilePathFromUri", "Path retrieved from cursor: " + path);
-                        } else {
-                            Log.e("FilePathFromUri", "Cursor moveToFirst failed");
-                        }
-                    } finally {
-                        cursor.close();
+                    if (cursor.moveToFirst()) {
+                        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                        path = cursor.getString(column_index);
+                        Log.d("FilePathFromUri", "Path retrieved from cursor: " + path);
+                    } else {
+                        Log.d("FilePathFromUri", "Cursor is empty");
                     }
+
+                    cursor.close();
                 } else {
-                    Log.e("FilePathFromUri", "Cursor is null");
+                    Log.d("FilePathFromUri", "Cursor is null");
                 }
-            } else if (uri.getScheme().equals("file")) {
+            } else if ("file".equals(uri.getScheme())) {
                 path = uri.getPath();
-                Log.d("FilePathFromUri", "Path retrieved directly from URI: " + path);
+                Log.d("FilePathFromUri", "Path retrieved from file URI: " + path);
             }
         } catch (Exception e) {
-            Log.e("FilePathFromUri", "Exception: " + e.getMessage());
             e.printStackTrace();
         }
         return path;
     }
-
-
 }
