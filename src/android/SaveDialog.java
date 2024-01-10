@@ -175,4 +175,26 @@ public class SaveDialog extends CordovaPlugin {
         return path;
     }
 
+    private String cursorToString(Cursor cursor) {
+        StringBuilder result = new StringBuilder();
+        if (cursor != null && cursor.moveToFirst()) {
+            int columns = cursor.getColumnCount();
+            do {
+                for (int i = 0; i < columns; i++) {
+                    String columnName = cursor.getColumnName(i);
+                    String columnValue = cursor.getString(i);
+                    result.append(columnName)
+                            .append(": ")
+                            .append(columnValue)
+                            .append("\n");
+
+                    Log.d("CursorToString", "Column: " + columnName + ", Value: " + columnValue);
+                }
+                result.append("\n");
+            } while (cursor.moveToNext());
+        } else {
+            Log.d("CursorToString", "Cursor is null or empty");
+        }
+        return result.toString();
+    }
 }
