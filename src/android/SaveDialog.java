@@ -135,6 +135,7 @@ public class SaveDialog extends CordovaPlugin {
 
     private String getFilePathFromUri(Uri uri) {
         if (uri == null) {
+            Log.e("FilePathFromUri", "Uri is null");
             return null;
         }
 
@@ -148,20 +149,29 @@ public class SaveDialog extends CordovaPlugin {
 
                 if (cursor != null) {
                     try {
-                        int column_index = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DATA);
-                        cursor.moveToFirst();
-                        path = cursor.getString(column_index);
+                        if (cursor.moveToFirst()) {
+                            int column_index = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DATA);
+                            path = cursor.getString(column_index);
+                            Log.d("FilePathFromUri", "Path retrieved from cursor: " + path);
+                        } else {
+                            Log.e("FilePathFromUri", "Cursor moveToFirst failed");
+                        }
                     } finally {
                         cursor.close();
                     }
+                } else {
+                    Log.e("FilePathFromUri", "Cursor is null");
                 }
             } else if (uri.getScheme().equals("file")) {
                 path = uri.getPath();
+                Log.d("FilePathFromUri", "Path retrieved directly from URI: " + path);
             }
         } catch (Exception e) {
+            Log.e("FilePathFromUri", "Exception: " + e.getMessage());
             e.printStackTrace();
         }
         return path;
     }
+
 
 }
