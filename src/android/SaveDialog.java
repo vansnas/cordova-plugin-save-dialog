@@ -146,13 +146,17 @@ public class SaveDialog extends CordovaPlugin {
 
         String path = null;
         try {
+            Log.d("FilePathFromUri", "Uri: " + uri.toString());
+
             if ("content".equals(uri.getScheme())) {
-                Log.d("FilePathFromUri", "Uri: " + uri.toString());
-            
                 String[] projection = {MediaStore.Images.Media.DATA};
                 Cursor cursor = cordova.getActivity().getContentResolver().query(uri, projection, null, null, null);
 
                 if (cursor != null) {
+                    Log.d("FilePathFromUri", "Columns available in cursor: " + Arrays.toString(cursor.getColumnNames()));
+
+                    Log.d("CursorToString", "Cursor data: " + cursorToString(cursor));
+
                     if (cursor.moveToFirst()) {
                         int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
                         path = cursor.getString(column_index);
@@ -170,6 +174,7 @@ public class SaveDialog extends CordovaPlugin {
                 Log.d("FilePathFromUri", "Path retrieved from file URI: " + path);
             }
         } catch (Exception e) {
+            Log.e("FilePathFromUri", "Exception while retrieving file path", e);
             e.printStackTrace();
         }
         return path;
