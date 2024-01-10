@@ -141,13 +141,20 @@ public class SaveDialog extends CordovaPlugin {
         String path = null;
         try {
             Log.d("FilePathFromUri", "Uri: " + uri.toString());
+
             if (uri.getScheme().equals("content")) {
                 String[] projection = {android.provider.MediaStore.Images.Media.DATA};
                 Cursor cursor = cordova.getActivity().getContentResolver().query(uri, projection, null, null, null);
-                int column_index = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DATA);
-                cursor.moveToFirst();
-                path = cursor.getString(column_index);
-                cursor.close();
+
+                if (cursor != null) {
+                    try {
+                        int column_index = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DATA);
+                        cursor.moveToFirst();
+                        path = cursor.getString(column_index);
+                    } finally {
+                        cursor.close();
+                    }
+                }
             } else if (uri.getScheme().equals("file")) {
                 path = uri.getPath();
             }
@@ -156,4 +163,5 @@ public class SaveDialog extends CordovaPlugin {
         }
         return path;
     }
+
 }
