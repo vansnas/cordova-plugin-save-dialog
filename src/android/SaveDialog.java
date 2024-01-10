@@ -43,7 +43,7 @@ public class SaveDialog extends CordovaPlugin {
         return true;
     }
 
-    public void locateFile(String type, String name) {
+    private void locateFile(String type, String name) {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType(type);
@@ -106,8 +106,13 @@ public class SaveDialog extends CordovaPlugin {
     }
 
     private String getFilePathFromUri(Uri uri) {
+        if (uri == null) {
+            return null;
+        }
+        
         String path = null;
         try {
+            Log.d("FilePathFromUri", "Uri: " + uri.toString());
             if (uri.getScheme().equals("content")) {
                 String[] projection = {android.provider.MediaStore.Images.Media.DATA};
                 Cursor cursor = cordova.getActivity().getContentResolver().query(uri, projection, null, null, null);
