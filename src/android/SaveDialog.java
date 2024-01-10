@@ -159,7 +159,7 @@ public class SaveDialog extends CordovaPlugin {
                     Log.d("CursorToString", "Cursor data: " + cursorToString(cursor));
 
                     if (cursor.moveToFirst()) {
-                        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                        int column_index = cursor.getColumnIndexOrThrow("_data");
                         path = cursor.getString(column_index);
                         Log.d("FilePathFromUri", "Path retrieved from cursor: " + path);
                     } else {
