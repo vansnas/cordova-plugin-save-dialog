@@ -142,63 +142,29 @@ public class SaveDialog extends CordovaPlugin {
     }
 
     private String getFilePathFromUri(Uri uri) {
+    if (uri == null) {
+        return null;
+    }
+
+    String path = uri.toString();
+    Log.d("FilePathFromUri", "URI used directly: " + path);
+
+    return path;
+}
+
+
+
+    private String getFilePathFromUri(Uri uri) {
         if (uri == null) {
             return null;
         }
 
-        String path = null;
-        try {
-            Log.d("FilePathFromUri", "Uri: " + uri.toString());
+        String path = uri.toString();
+        Log.d("FilePathFromUri", "URI used directly: " + path);
 
-            if ("content".equals(uri.getScheme())) {
-                String[] projection = {MediaStore.Images.Media.DATA};
-                Cursor cursor = cordova.getActivity().getContentResolver().query(uri, projection, null, null, null);
-
-                if (cursor != null && cursor.moveToFirst()) {
-                    int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                    path = cursor.getString(columnIndex);
-                    Log.d("FilePathFromUri", "Path retrieved from cursor: " + path);
-                } else {
-                    Log.d("FilePathFromUri", "Cursor is null or empty");
-                }
-
-                if (cursor != null) {
-                    cursor.close();
-                }
-            } else if ("file".equals(uri.getScheme())) {
-                path = uri.getPath();
-                Log.d("FilePathFromUri", "Path retrieved from file URI: " + path);
-            }
-        } catch (Exception e) {
-            Log.e("FilePathFromUri", "Exception while retrieving file path", e);
-            e.printStackTrace();
-        }
         return path;
     }
 
-
-    private String cursorToString(Cursor cursor) {
-        StringBuilder result = new StringBuilder();
-        if (cursor != null) {
-            int columns = cursor.getColumnCount();
-            Log.d("CursorToString", "Number of columns: " + columns);
-
-            while (cursor.moveToNext()) {
-                for (int i = 0; i < columns; i++) {
-                    String columnName = cursor.getColumnName(i);
-                    String columnValue = cursor.getString(i);
-                    result.append(columnName).append(": ").append(columnValue).append("\n");
-
-                    Log.d("CursorToString", "Column: " + columnName + ", Value: " + columnValue);
-                }
-                result.append("\n");
-            }
-        } else {
-            result.append("Cursor is null");
-            Log.d("CursorToString", "Cursor is null");
-        }
-        return result.toString();
-    }
 
 
 }
