@@ -151,25 +151,20 @@ public class SaveDialog extends CordovaPlugin {
             Log.d("FilePathFromUri", "Uri: " + uri.toString());
 
             if ("content".equals(uri.getScheme())) {
-                String[] projection = {"_data"};
+                String[] projection = {MediaStore.Images.Media.DATA};
                 Cursor cursor = cordova.getActivity().getContentResolver().query(uri, projection, null, null, null);
 
-                if (cursor != null) {
-                    Log.d("FilePathFromUri", "Cursor data: " + cursorToString(cursor));
-
-                    if (cursor.moveToFirst()) {
-                        int column_index = cursor.getColumnIndexOrThrow("_data");
-                        path = cursor.getString(column_index);
-                        Log.d("FilePathFromUri", "Path retrieved from cursor: " + path);
-                    } else {
-                        Log.d("FilePathFromUri", "Cursor is empty");
-                    }
-
-                    cursor.close();
+                if (cursor != null && cursor.moveToFirst()) {
+                    int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                    path = cursor.getString(columnIndex);
+                    Log.d("FilePathFromUri", "Path retrieved from cursor: " + path);
                 } else {
-                    Log.d("FilePathFromUri", "Cursor is null");
+                    Log.d("FilePathFromUri", "Cursor is null or empty");
                 }
 
+                if (cursor != null) {
+                    cursor.close();
+                }
             } else if ("file".equals(uri.getScheme())) {
                 path = uri.getPath();
                 Log.d("FilePathFromUri", "Path retrieved from file URI: " + path);
@@ -180,6 +175,7 @@ public class SaveDialog extends CordovaPlugin {
         }
         return path;
     }
+
 
     private String cursorToString(Cursor cursor) {
         StringBuilder result = new StringBuilder();
