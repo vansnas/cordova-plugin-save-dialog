@@ -141,18 +141,6 @@ public class SaveDialog extends CordovaPlugin {
         }
     }
 
-    private String getFilePathFromUri(Uri uri) {
-    if (uri == null) {
-        return null;
-    }
-
-    String path = uri.toString();
-    Log.d("FilePathFromUri", "URI used directly: " + path);
-
-    return path;
-}
-
-
 
     private String getFilePathFromUri(Uri uri) {
         if (uri == null) {
